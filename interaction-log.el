@@ -329,12 +329,25 @@ commands, only file loads, and everything."
 	(remove-from-invisibility-spec 'ilog-buffer)
       (add-to-invisibility-spec 'ilog-buffer))))
 
+(defun ilog-create-buffer ()
+  "Create buffer with name `ilog-buffer-name'."
+  (with-current-buffer (generate-new-buffer ilog-buffer-name)
+    (setq buffer-invisibility-spec (if ilog-initially-show-buffers '() '(ilog-buffer)))
+    (set (make-local-variable 'scroll-margin) 0)
+    (set (make-local-variable 'scroll-conservatively) 10000)
+    (set (make-local-variable 'scroll-step) 1)
+    (set (make-local-variable 'cursor-in-non-selected-windows) nil)
+    (setq buffer-read-only t)
+    (ilog-log-buffer-mode)
+    (current-buffer)))
+
 (defun ilog-show-in-new-frame ()
   "Display log in a pop up frame.
 Customize `ilog-new-frame-parameters' to specify parameters of
 the newly created frame."
   (interactive)
   (unless interaction-log-mode (interaction-log-mode +1))
+  (unless (get-buffer ilog-buffer-name) (ilog-create-buffer))
   (let ((win (display-buffer-pop-up-frame
 	      (get-buffer ilog-buffer-name)
 	      `((pop-up-frame-parameters . ,ilog-new-frame-parameters)))))
@@ -469,15 +482,7 @@ BEG-OF-LAST-LINE is non-nil."
 	  (and current-idle-time (> (time-to-seconds current-idle-time) ilog-idle-time)))
     (let* ((ilog-buffer
 	    (or (get-buffer ilog-buffer-name)
-		(with-current-buffer (generate-new-buffer ilog-buffer-name)
-		  (setq buffer-invisibility-spec (if ilog-initially-show-buffers '() '(ilog-buffer)))
-		  (set (make-local-variable 'scroll-margin) 0)
-		  (set (make-local-variable 'scroll-conservatively) 10000)
-		  (set (make-local-variable 'scroll-step) 1)
-		  (set (make-local-variable 'cursor-in-non-selected-windows) nil)
-		  (setq buffer-read-only t)
-		  (ilog-log-buffer-mode)
-		  (current-buffer))))
+		(ilog-create-buffer)))
 	   eob ateobp ilog-eob-wins)
       (with-current-buffer ilog-buffer
 	(when ilog-tail-mode
