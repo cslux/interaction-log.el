@@ -206,8 +206,8 @@ placeholder for byte code functions."
 These parameters are applied to the new frame."
   :group 'interaction-log
   :type '(repeat (cons :format "%v"
-		       (symbol :tag "Parameter")
-		       (sexp :tag "Value"))))
+                       (symbol :tag "Parameter")
+                       (sexp :tag "Value"))))
 
 
 ;;;; Other stuff
@@ -273,9 +273,9 @@ Logged stuff goes to the *Emacs Log* buffer."
         (add-hook 'post-command-hook      #'ilog-post-command)
         (setq ilog-truncation-timer (run-at-time 30 30 #'ilog-truncate-log-buffer))
         (setq ilog-insertion-timer (run-with-timer ilog-idle-time ilog-idle-time
-						   #'ilog-timer-function))
+                                                   #'ilog-timer-function))
         (message "Interaction Log: started logging in %s" ilog-buffer-name)
-	(easy-menu-add ilog-minor-mode-menu))
+        (easy-menu-add ilog-minor-mode-menu))
     (remove-hook 'after-change-functions #'ilog-note-buffer-change)
     (remove-hook 'pre-command-hook       #'ilog-record-this-command)
     (remove-hook 'post-command-hook      #'ilog-post-command)
@@ -326,7 +326,7 @@ commands, only file loads, and everything."
   (ilog-log-buf-current-or-barf)
   (unless (memq 'ilog-command buffer-invisibility-spec)
     (if (memq 'ilog-buffer buffer-invisibility-spec)
-	(remove-from-invisibility-spec 'ilog-buffer)
+        (remove-from-invisibility-spec 'ilog-buffer)
       (add-to-invisibility-spec 'ilog-buffer))))
 
 (defun ilog-create-buffer ()
@@ -349,8 +349,8 @@ the newly created frame."
   (unless interaction-log-mode (interaction-log-mode +1))
   (unless (get-buffer ilog-buffer-name) (ilog-create-buffer))
   (let ((win (display-buffer-pop-up-frame
-	      (get-buffer ilog-buffer-name)
-	      `((pop-up-frame-parameters . ,ilog-new-frame-parameters)))))
+              (get-buffer ilog-buffer-name)
+              `((pop-up-frame-parameters . ,ilog-new-frame-parameters)))))
     (set-window-dedicated-p win t)
     win))
 
@@ -362,12 +362,12 @@ This is the case when OBJECT is an `fboundp' symbol whose name is
 matched by any regexp in  `ilog-self-insert-command-regexps'."
   (let (name)
     (and (symbolp object)
-	 (setq name (symbol-name object))
-	 (catch 'match
-	   (mapc (lambda (regexp) (when (string-match-p regexp name) (throw 'match t)))
-		 ilog-self-insert-command-regexps)
-	   nil)
-	 (fboundp object))))
+         (setq name (symbol-name object))
+         (catch 'match
+           (mapc (lambda (regexp) (when (string-match-p regexp name) (throw 'match t)))
+                 ilog-self-insert-command-regexps)
+           nil)
+         (fboundp object))))
 
 (defun ilog-log-buf-current-or-barf ()
   "Barf if the ilog log buffer is not current."
@@ -393,11 +393,11 @@ Key bindings:
       (ilog-get-last-messages)
       (propertize
        (concat
-	(file-name-sans-extension (file-name-nondirectory file)) " was loaded"
-	(if load-file-name
-	    (concat " by " (file-name-sans-extension (file-name-nondirectory load-file-name)))
-	  "")
-	" from " file)
+        (file-name-sans-extension (file-name-nondirectory file)) " was loaded"
+        (if load-file-name
+            (concat " by " (file-name-sans-extension (file-name-nondirectory load-file-name)))
+          "")
+        " from " file)
        'load-message t)
       "\n")))
 
@@ -428,37 +428,37 @@ If the *Messages* buffer has been killed, recreate it silently." ; Is this a goo
 (defun ilog-record-this-command ()
   "Push info about the current command to `ilog-recent-commands'."
   (let ((keys (if (ilog-entering-password-p) [??] ;hide passwords!
-		(apply #'vector
-		       (mapcar
-			(lambda (key) (if (consp key) ; (mouse-... event-data)
-				     (car key)
-				   key))
-			(this-command-keys-vector)))))
-	(command (cond
-		  ((ilog-entering-password-p) "(entering-password)")
-		  ((symbolp this-command) this-command)
-		  ((not ilog-print-lambdas) "<anonymous command>")
-		  ((or (not (byte-code-function-p this-command))
-		       (eq t ilog-print-lambdas))
-		   this-command)
-		  (t "<byte code>")))
-	(buffer-name (buffer-name))
-	(pre-messages (ilog-get-last-messages))
-	(last-log-entry (car ilog-recent-commands)))
+                (apply #'vector
+                       (mapcar
+                        (lambda (key) (if (consp key) ; (mouse-... event-data)
+                                     (car key)
+                                   key))
+                        (this-command-keys-vector)))))
+        (command (cond
+                  ((ilog-entering-password-p) "(entering-password)")
+                  ((symbolp this-command) this-command)
+                  ((not ilog-print-lambdas) "<anonymous command>")
+                  ((or (not (byte-code-function-p this-command))
+                       (eq t ilog-print-lambdas))
+                   this-command)
+                  (t "<byte code>")))
+        (buffer-name (buffer-name))
+        (pre-messages (ilog-get-last-messages))
+        (last-log-entry (car ilog-recent-commands)))
     (if (and last-log-entry ;check whether we can accumulate while recording
-	     (not (ilog-self-insert-command-p command))
-	     (equal keys        (ilog-log-entry-keys        last-log-entry))
-	     (equal command     (ilog-log-entry-command     last-log-entry))
-	     (equal buffer-name (ilog-log-entry-buffer-name last-log-entry))
-	     (string= "" pre-messages)
-	     (string= "" (ilog-log-entry-post-messages last-log-entry)))
-	(cl-incf (ilog-log-entry-mult last-log-entry))
+             (not (ilog-self-insert-command-p command))
+             (equal keys        (ilog-log-entry-keys        last-log-entry))
+             (equal command     (ilog-log-entry-command     last-log-entry))
+             (equal buffer-name (ilog-log-entry-buffer-name last-log-entry))
+             (string= "" pre-messages)
+             (string= "" (ilog-log-entry-post-messages last-log-entry)))
+        (cl-incf (ilog-log-entry-mult last-log-entry))
       (push (make-ilog-log-entry
-	     :keys keys
-	     :command command
-	     :buffer-name buffer-name
-	     :pre-messages pre-messages)
-	    ilog-recent-commands))))
+             :keys keys
+             :command command
+             :buffer-name buffer-name
+             :pre-messages pre-messages)
+            ilog-recent-commands))))
 
 (defun ilog-post-command ()
   "DTRT after a command was executed.
@@ -479,117 +479,117 @@ BEG-OF-LAST-LINE is non-nil."
 (defun ilog-timer-function ()
   "Transform and insert pending data into the log buffer."
   (when (let ((current-idle-time (current-idle-time)))
-	  (and current-idle-time (> (time-to-seconds current-idle-time) ilog-idle-time)))
+          (and current-idle-time (> (time-to-seconds current-idle-time) ilog-idle-time)))
     (let* ((ilog-buffer
-	    (or (get-buffer ilog-buffer-name)
-		(ilog-create-buffer)))
-	   eob ateobp ilog-eob-wins)
+            (or (get-buffer ilog-buffer-name)
+                (ilog-create-buffer)))
+           eob ateobp ilog-eob-wins)
       (with-current-buffer ilog-buffer
-	(when ilog-tail-mode
-	  (setq eob (ilog-last-line-pos truncate-lines))
-	  (setq ateobp (>= (point) eob))
-	  (setq ilog-eob-wins
-		(if (eq t ilog-tail-mode)
-		    (delq nil
-			  (mapcar (lambda (win) (and (>= (window-point win) eob) win))
-				  (get-buffer-window-list ilog-buffer nil t)))
-		  (delq (selected-window) (get-buffer-window-list ilog-buffer nil t)))))
-	(let ((ilog-changing-log-buffer-p t) (deactivate-mark nil) (inhibit-read-only t) (firstp t))
-	  (save-excursion
-	    (goto-char (point-max))
-	    (if ilog-recent-commands
-		(dolist (entry (nreverse ilog-recent-commands))
-		  (let ((keys        (ilog-log-entry-keys             entry))
-			(command     (ilog-log-entry-command          entry))
-			(buf         (ilog-log-entry-buffer-name      entry))
-			(pre-mess    (ilog-log-entry-pre-messages     entry))
-			(post-mess   (ilog-log-entry-post-messages    entry))
-			(changedp    (ilog-log-entry-changed-buffer-p entry))
-			(mult        (ilog-log-entry-mult             entry)))
-		    
-		    ;; Insert cached commands
-		    ;; 
-		    ;; Accumulating commands satisfying `ilog-self-insert-command-p'
-		    ;; is done by simply going backwards.
-		    ;; 
-		    ;; Other commands were accumulated right from recording.  We have
-		    ;; to check whether	the first cached command may be	added to the last
-		    ;; inserted line.
-		    ;;
-		    ;; Newline characters are always prepended to a chunk when
-		    ;; appropriate and share its invisible spec.
-		    
-		    (when firstp
-		      (setq firstp nil)
-		      ;; check whether to combine with last inserted line
-		      (when (and ilog-last-inserted-command
-				 (not (ilog-self-insert-command-p command))
-				 (equal keys    (ilog-log-entry-keys    ilog-last-inserted-command))
-				 (equal command (ilog-log-entry-command ilog-last-inserted-command))
-				 (equal buf (ilog-log-entry-buffer-name ilog-last-inserted-command))
-				 (string= pre-mess "") (string= post-mess "")
-				 (equal changedp (ilog-log-entry-changed-buffer-p
-						  ilog-last-inserted-command))				 )
-			(cl-incf mult (ilog-log-entry-mult ilog-last-inserted-command))
-			(cl-incf (ilog-log-entry-mult entry)
-			      (ilog-log-entry-mult ilog-last-inserted-command))
-			;; delete last log line
-			(search-backward-regexp "[^[:space:]]")
-			(beginning-of-line)
-			(delete-region (point) (point-max))))
-		    (insert (if (ilog-self-insert-command-p command)
-				(progn
-				  ;; check whether to add to last line
-				  (if (not (and ilog-last-inserted-command
-						(equal pre-mess "")
-						(ilog-self-insert-command-p
-						 (ilog-log-entry-command ilog-last-inserted-command))))
-				      (insert (propertize (if (looking-back "\\`\\|\n" (1- (point)))
+        (when ilog-tail-mode
+          (setq eob (ilog-last-line-pos truncate-lines))
+          (setq ateobp (>= (point) eob))
+          (setq ilog-eob-wins
+                (if (eq t ilog-tail-mode)
+                    (delq nil
+                          (mapcar (lambda (win) (and (>= (window-point win) eob) win))
+                                  (get-buffer-window-list ilog-buffer nil t)))
+                  (delq (selected-window) (get-buffer-window-list ilog-buffer nil t)))))
+        (let ((ilog-changing-log-buffer-p t) (deactivate-mark nil) (inhibit-read-only t) (firstp t))
+          (save-excursion
+            (goto-char (point-max))
+            (if ilog-recent-commands
+                (dolist (entry (nreverse ilog-recent-commands))
+                  (let ((keys        (ilog-log-entry-keys             entry))
+                        (command     (ilog-log-entry-command          entry))
+                        (buf         (ilog-log-entry-buffer-name      entry))
+                        (pre-mess    (ilog-log-entry-pre-messages     entry))
+                        (post-mess   (ilog-log-entry-post-messages    entry))
+                        (changedp    (ilog-log-entry-changed-buffer-p entry))
+                        (mult        (ilog-log-entry-mult             entry)))
+
+                    ;; Insert cached commands
+                    ;;
+                    ;; Accumulating commands satisfying `ilog-self-insert-command-p'
+                    ;; is done by simply going backwards.
+                    ;;
+                    ;; Other commands were accumulated right from recording.  We have
+                    ;; to check whether the first cached command may be added to the last
+                    ;; inserted line.
+                    ;;
+                    ;; Newline characters are always prepended to a chunk when
+                    ;; appropriate and share its invisible spec.
+
+                    (when firstp
+                      (setq firstp nil)
+                      ;; check whether to combine with last inserted line
+                      (when (and ilog-last-inserted-command
+                                 (not (ilog-self-insert-command-p command))
+                                 (equal keys    (ilog-log-entry-keys    ilog-last-inserted-command))
+                                 (equal command (ilog-log-entry-command ilog-last-inserted-command))
+                                 (equal buf (ilog-log-entry-buffer-name ilog-last-inserted-command))
+                                 (string= pre-mess "") (string= post-mess "")
+                                 (equal changedp (ilog-log-entry-changed-buffer-p
+                                                  ilog-last-inserted-command))                           )
+                        (cl-incf mult (ilog-log-entry-mult ilog-last-inserted-command))
+                        (cl-incf (ilog-log-entry-mult entry)
+                              (ilog-log-entry-mult ilog-last-inserted-command))
+                        ;; delete last log line
+                        (search-backward-regexp "[^[:space:]]")
+                        (beginning-of-line)
+                        (delete-region (point) (point-max))))
+                    (insert (if (ilog-self-insert-command-p command)
+                                (progn
+                                  ;; check whether to add to last line
+                                  (if (not (and ilog-last-inserted-command
+                                                (equal pre-mess "")
+                                                (ilog-self-insert-command-p
+                                                 (ilog-log-entry-command ilog-last-inserted-command))))
+                                      (insert (propertize (if (looking-back "\\`\\|\n" (1- (point)))
                                                               "" "\n")
-							  'invisible 'ilog-command))
-				    (search-backward-regexp "[^[:space:]]")
-				    (forward-char 1)
-				    (delete-region (point) (point-max))
-				    (goto-char (point-max)))
-				  (propertize (key-description keys)
-					      'face (cl-case changedp
-						      ((t)    'ilog-change-face)
-						      ((echo) 'ilog-echo-face)
-						      (t      'ilog-non-change-face))
-					      'invisible 'ilog-command))
-			      (concat
-			       (ilog-format-messages pre-mess)
-			       (propertize (if (looking-back "\\`\\|\n" (1- (point))) "" "\n")
-					   'invisible 'ilog-command)
-			       (propertize (concat (if (> mult 1) (format "%s * " mult) "")
-						   (key-description keys))
-					   'face (cl-case changedp
-						   ((t)    'ilog-change-face)
-						   ((echo) 'ilog-echo-face)
-						   (t      'ilog-non-change-face))
-					   'invisible 'ilog-command)
-			       (propertize (concat " " (format "%s" command))
-					   'invisible 'ilog-command)
-			       (propertize (format " %s" buf)
-					   'face 'ilog-buffer-face
-					   'invisible 'ilog-buffer)))
-			    (ilog-format-messages post-mess))
-		    (setq ilog-last-inserted-command (and (equal post-mess "") entry))))
-	      ;; No keys were hit.  Only collect new messages.
-	      (let ((messages (ilog-get-last-messages)))
-		(unless (string= messages "")
-		  (insert (ilog-format-messages messages))
-		  (setq ilog-last-inserted-command nil))))
-	    (setq ilog-recent-commands ())))
-	(when (buffer-modified-p)
-	  ;; only do stuff triggering redisplay when buffer was modified
-	  (set-buffer-modified-p nil)
-	  (when ilog-tail-mode
-	    (let ((end (ilog-last-line-pos truncate-lines)))
-	      (if ilog-eob-wins
-		  (dolist (win ilog-eob-wins)
-		    (set-window-point win end))
-		(when ateobp (goto-char end))))))))))
+                                                          'invisible 'ilog-command))
+                                    (search-backward-regexp "[^[:space:]]")
+                                    (forward-char 1)
+                                    (delete-region (point) (point-max))
+                                    (goto-char (point-max)))
+                                  (propertize (key-description keys)
+                                              'face (cl-case changedp
+                                                      ((t)    'ilog-change-face)
+                                                      ((echo) 'ilog-echo-face)
+                                                      (t      'ilog-non-change-face))
+                                              'invisible 'ilog-command))
+                              (concat
+                               (ilog-format-messages pre-mess)
+                               (propertize (if (looking-back "\\`\\|\n" (1- (point))) "" "\n")
+                                           'invisible 'ilog-command)
+                               (propertize (concat (if (> mult 1) (format "%s * " mult) "")
+                                                   (key-description keys))
+                                           'face (cl-case changedp
+                                                   ((t)    'ilog-change-face)
+                                                   ((echo) 'ilog-echo-face)
+                                                   (t      'ilog-non-change-face))
+                                           'invisible 'ilog-command)
+                               (propertize (concat " " (format "%s" command))
+                                           'invisible 'ilog-command)
+                               (propertize (format " %s" buf)
+                                           'face 'ilog-buffer-face
+                                           'invisible 'ilog-buffer)))
+                            (ilog-format-messages post-mess))
+                    (setq ilog-last-inserted-command (and (equal post-mess "") entry))))
+              ;; No keys were hit.  Only collect new messages.
+              (let ((messages (ilog-get-last-messages)))
+                (unless (string= messages "")
+                  (insert (ilog-format-messages messages))
+                  (setq ilog-last-inserted-command nil))))
+            (setq ilog-recent-commands ())))
+        (when (buffer-modified-p)
+          ;; only do stuff triggering redisplay when buffer was modified
+          (set-buffer-modified-p nil)
+          (when ilog-tail-mode
+            (let ((end (ilog-last-line-pos truncate-lines)))
+              (if ilog-eob-wins
+                  (dolist (win ilog-eob-wins)
+                    (set-window-point win end))
+                (when ateobp (goto-char end))))))))))
 
 (defun ilog-cut-surrounding-newlines (string)
   "Cut all newlines at beginning and end of STRING.
@@ -604,16 +604,16 @@ Return the result."
   "Format and propertize messages in STRING."
   (if (and (stringp string) (not (equal string "")))
       (let ((messages (ilog-cut-surrounding-newlines string)))
-	(mapconcat 
-	 (lambda (line)
-	   (let ((load-mesg-p (get-text-property 0 'load-message line)))
-	     (propertize
-	      (concat  "\n"
-		       ;; (if load-mesg-p (make-string load-mesg-p ?\ ) "") ;;
-		       line)
-	      'face (if load-mesg-p 'ilog-load-face 'ilog-message-face)
-	      'invisible (if load-mesg-p 'ilog-load 'ilog-message))))
-	 (split-string messages "\n") ""))
+        (mapconcat
+         (lambda (line)
+           (let ((load-mesg-p (get-text-property 0 'load-message line)))
+             (propertize
+              (concat  "\n"
+                       ;; (if load-mesg-p (make-string load-mesg-p ?\ ) "") ;;
+                       line)
+              'face (if load-mesg-p 'ilog-load-face 'ilog-message-face)
+              'invisible (if load-mesg-p 'ilog-load 'ilog-message))))
+         (split-string messages "\n") ""))
     ""))
 
 (defun ilog-note-buffer-change (&rest _)
@@ -625,9 +625,9 @@ Area."
   (when (and (not ilog-changing-log-buffer-p)
              ilog-recent-commands)
     (setf (ilog-log-entry-changed-buffer-p (car ilog-recent-commands))
-	  (if (string-match "\\` \\*Echo Area" (buffer-name))
-	      'echo
-	    t))))
+          (if (string-match "\\` \\*Echo Area" (buffer-name))
+              'echo
+            t))))
 
 (defun ilog-truncate-log-buffer ()
   "Truncate the log buffer to `ilog-log-max' lines."
@@ -641,7 +641,7 @@ Area."
             (goto-char (point-max))
             (forward-line (- ilog-log-max))
             (delete-region (point-min) (point))
-	    (set-buffer-modified-p nil)))))))
+            (set-buffer-modified-p nil)))))))
 
 
 (provide 'interaction-log)
